@@ -27,3 +27,9 @@ body {
   background-color: #202020;
   color: #ffffff;
 }
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}

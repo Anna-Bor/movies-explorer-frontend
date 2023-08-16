@@ -110,11 +110,11 @@ function App() {
       />
       <Route
         path="signin"
-        element={<Login onSubmit={login} isLoading={isLoading} />}
+        element={<main><Login onSubmit={login} isLoading={isLoading} /></main>}
       />
       <Route
         path="signup"
-        element={<Register onSubmit={register} isLoading={isLoading} />}
+        element={<main><Register onSubmit={register} isLoading={isLoading} /></main>}
       />
       <Route
         path="profile"

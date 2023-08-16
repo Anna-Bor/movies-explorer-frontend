@@ -11,6 +11,11 @@
   display: inline-block;
   width: 36px;
   height: 20px;
+  transition: opacity 0.4s ease-in;
+}
+
+.checkbox__label:hover {
+  opacity: 0.7;
 }
 
 .checkbox__label .checkbox__input {

@@ -8,6 +8,11 @@
 
 .register__logo {
   margin-block-start: 56px;
+  transition: opacity 0.4s ease-in;
+}
+
+.register__logo:hover {
+  opacity: 0.7;
 }
 
 .register__header {

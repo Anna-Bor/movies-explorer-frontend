@@ -3,6 +3,7 @@
   padding-inline: 10px;
   max-width: 1280px;
   margin-inline: auto;
+  box-sizing: border-box;
 }
 
 .search__main-holder {

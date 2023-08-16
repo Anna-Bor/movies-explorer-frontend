@@ -8,6 +8,11 @@
 
 .login__logo {
   margin-block-start: 56px;
+  transition: opacity 0.4s ease-in;
+}
+
+.login__logo:hover {
+  opacity: 0.7;
 }
 
 .login__header {

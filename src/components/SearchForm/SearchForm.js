@@ -15,6 +15,7 @@ function SearchForm() {
             <label htmlFor="search" className="search__label">
               <input
                 id="search"
+                required
                 className="search__input"
                 placeholder="Фильм"
               />

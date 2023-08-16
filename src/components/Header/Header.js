@@ -20,7 +20,7 @@ function Header({ isSignedIn }) {
           />
           <div
             className={`header__navigation-list-holder${
-              isMenuOpened ? ' header__navigation-link-holder_opened' : ''
+              isMenuOpened ? ' header__navigation-list-holder_opened' : ''
             }`}
           >
             <button
