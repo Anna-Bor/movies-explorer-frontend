@@ -1,0 +1,35 @@
+@import "normalize.css/normalize.css";
+@import "./vendor/fonts/fonts.css";
+
+:root {
+  --contentInlinePadding: 14px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --contentInlinePadding: 30px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --contentInlinePadding: 70px;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #202020;
+  color: #ffffff;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}

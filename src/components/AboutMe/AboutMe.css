@@ -1,0 +1,156 @@
+.student {
+  padding: 82px 14px 0;
+  max-width: 1280px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
+.student__title {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: -0.72px;
+  padding-block-end: 28px;
+  border-bottom: 1px solid #ffffff;
+  margin: 0;
+}
+
+.student__description {
+  display: flex;
+  flex-direction: column-reverse;
+  margin-block: 60px 70px;
+  gap: 40px;
+}
+
+.student__description-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.student__name {
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: -1.2px;
+  margin-block: 0 20px;
+}
+
+.student__caption {
+  font-feature-settings: "clig" off, "liga" off;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px;
+  margin-block: 0 20px;
+}
+
+.student__about-text {
+  margin-block: 0;
+  font-feature-settings: "clig" off, "liga" off;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.student__link {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  margin-block-start: 40px;
+  transition: opacity 0.4s ease-in;
+}
+
+.student__link:hover {
+  opacity: 0.7;
+}
+
+.student__picture {
+  width: 292px;
+  height: 352px;
+  border-radius: 10px;
+  margin-inline: auto;
+}
+
+@media (min-width: 768px) {
+  .student {
+    padding: 90px 50px 0;
+  }
+
+  .student__title {
+    font-size: 22px;
+    letter-spacing: -0.88px;
+    padding-block-end: 23px;
+  }
+
+  .student__description {
+    flex-direction: row;
+    margin-block: 66px 90px;
+    gap: 49px;
+  }
+
+  .student__name {
+    font-size: 40px;
+    line-height: 40px;
+    letter-spacing: -1.6px;
+    margin-block-end: 16px;
+  }
+
+  .student__caption {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .student__about-text {
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  .student__link {
+    margin-block-start: auto;
+  }
+
+  .student__picture {
+    width: 255px;
+    height: 307px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .student {
+    padding: 110px 70px 0;
+  }
+
+  .student__description {
+    margin-block: 66px 100px;
+    gap: 270px;
+  }
+
+  .student__name {
+    font-size: 50px;
+    line-height: 58px;
+    letter-spacing: -2px;
+    margin-block-end: 18px;
+  }
+
+  .student__caption {
+    font-size: 18px;
+    line-height: 20px;
+    margin-block-end: 26px;
+  }
+
+  .student__about-text {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .student__picture {
+    width: 270px;
+    height: 327px;
+  }
+}
