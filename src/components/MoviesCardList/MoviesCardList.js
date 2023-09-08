@@ -8,7 +8,13 @@ import {
   WINDOW_MIN_WIDTH,
 } from '../../utils/constants';
 
-function MoviesCardList({ movies, savedMovies, isOnSavedPage }) {
+function MoviesCardList({
+  movies,
+  savedMovies,
+  isOnSavedPage,
+  onLike,
+  onDelete,
+}) {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [moviesAmount, setMoviesAmount] = useState(0);
   const [showedMoviesAmount, setShowedMoviesAmount] = useState(0);
@@ -56,12 +62,12 @@ function MoviesCardList({ movies, savedMovies, isOnSavedPage }) {
           <MoviesCard
             key={movie.id || movie.movieId}
             isOnSavedPage={isOnSavedPage}
-            image={movie.image.url || movie.image}
-            name={movie.nameRU || movie.nameEN}
-            duration={movie.duration}
+            movie={movie}
             isSaved={savedMovies
               ?.map((savedMovie) => savedMovie.movieId)
               ?.includes(movie.id || movie.movieId)}
+            onLike={onLike}
+            onDelete={onDelete}
           />
         ))}
       </ul>

@@ -1,3 +1,7 @@
+.movies-card__link {
+  text-decoration: none;
+}
+
 .movies-card__image {
   width: 300px;
   height: 168px;
@@ -19,6 +23,7 @@
   font-weight: 500;
   line-height: normal;
   max-height: 1rem;
+  color: #ffffff;
 }
 
 .movies-card__action {

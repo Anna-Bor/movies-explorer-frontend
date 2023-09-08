@@ -63,11 +63,16 @@ function Form({
             additionalProps={input.additionalProps}
           />
         ))
-        .reduce((prev, curr) => [
-          prev,
-          isSeparatorEnabled ? <hr className="form__separator" /> : undefined,
-          curr,
-        ])}
+        .reduce((prev, curr, currIndex) => {
+          const key = `sep-${currIndex}`;
+          return [
+            prev,
+            isSeparatorEnabled ? (
+              <hr className="form__separator" key={key} />
+            ) : undefined,
+            curr,
+          ];
+        })}
       <button
         className={`form__submit-button${
           isButtonHidden ? ' form__submit-button_hidden' : ''

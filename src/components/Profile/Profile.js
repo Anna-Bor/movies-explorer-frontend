@@ -1,30 +1,27 @@
 import './Profile.css';
-import { useState } from 'react';
-import Header from '../Header/Header';
+import { useContext, useEffect, useState } from 'react';
 import { FORM_OPTIONS } from '../../utils/constants';
+import CurrentUserContext from '../../contexts/CurrentUserContext';
+import Header from '../Header/Header';
 import Form from '../Form/Form';
-import { useNavigate } from 'react-router-dom';
 
-function Profile({
-  onSubmit,
-  isLoading,
-  user
-}) {
-  const navigate = useNavigate();
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
+function Profile({ onSubmit, isLoading, onLogout }) {
+  const currentUser = useContext(CurrentUserContext);
+  const [name, setName] = useState(currentUser?.name);
+  const [email, setEmail] = useState(currentUser?.email);
   const [isButtonHidden, setIsButtonHidden] = useState(true);
 
-  function logout() {
-    navigate('/');
-  }
+  useEffect(() => {
+    setName(currentUser?.name);
+    setEmail(currentUser?.email);
+  }, [currentUser]);
 
   return (
     <>
-      <Header isSignedIn/>
+      <Header isSignedIn={currentUser} />
       <main>
         <section className="profile">
-          <h1 className="profile__title">{`Привет, ${name}!`}</h1>
+          <h1 className="profile__title">{`Привет, ${currentUser?.name}!`}</h1>
           <Form
             inputs={[
               {
@@ -78,7 +75,7 @@ function Profile({
                 <button
                   className="profile__action profile__action_accent"
                   type="button"
-                  onClick={logout}
+                  onClick={onLogout}
                 >
                   Выйти из аккаунта
                 </button>
