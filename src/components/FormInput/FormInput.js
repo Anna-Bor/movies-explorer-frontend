@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import './FormInput.css';
 
 function FormInput({
@@ -13,6 +14,7 @@ function FormInput({
   onValueChange,
   additionalProps,
 }) {
+  const t = /[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$/;
   return (
     <div className="form__field-holder">
       <label
@@ -33,6 +35,7 @@ function FormInput({
           onChange={(e) => onValueChange(e.target.value)}
           className={`form__field${modifier ? ` form__field_${modifier}` : ''}`}
           required="required"
+          pattern={t}
           {...additionalProps}
         />
       </label>

@@ -1,7 +1,7 @@
 import './App.css';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { STORAGE_KEYS } from '../../utils/constants';
+import { MESSAGES, SHORT_MOVIE_MAX_DURATION, STORAGE_KEYS } from '../../utils/constants';
 import CurrentUserContext from '../../contexts/CurrentUserContext';
 import Main from '../Main/Main';
 import Movies from '../Movies/Movies';
@@ -13,6 +13,7 @@ import Login from '../Login/Login';
 import Register from '../Register/Register';
 import Profile from '../Profile/Profile';
 import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
+import { searchMovie } from '../../utils/utils';
 
 function App() {
   const navigate = useNavigate();
@@ -21,9 +22,7 @@ function App() {
     !!localStorage.getItem(STORAGE_KEYS.TOKEN),
   );
   const [currentUser, setCurrentUser] = useState(undefined);
-  const [movies, setMovies] = useState(
-    JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVIES)) ?? [],
-  );
+  const [movies, setMovies] = useState([]);
   const [savedMovies, setSavedMovies] = useState(
     JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVED_MOVIES)) ?? [],
   );
@@ -36,15 +35,8 @@ function App() {
   const [searchResult, setSearchResult] = useState(
     JSON.parse(localStorage.getItem(STORAGE_KEYS.SEARCH_RESULT)) ?? [],
   );
-  const [savedSearch, setSavedSearch] = useState(
-    localStorage.getItem(STORAGE_KEYS.SAVED_SEARCH) ?? '',
-  );
-  const [isSavedShort, setIsSavedShort] = useState(
-    JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVED_IS_SHORT)) ?? false,
-  );
-  const [savedSearchResult, setSavedSearchResult] = useState(
-    JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVED_SEARCH_RESULT)) ?? [],
-  );
+  const [formMessage, setFormMessage] = useState('');
+  const [isMovieLoading, setIsMovieLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
@@ -66,8 +58,44 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (isLoggedIn && savedMovies.length === 0) {
+      mainApi
+        .getSavedMovies()
+        .then((savedMovieCollection) => {
+          localStorage.setItem(
+            STORAGE_KEYS.SAVED_MOVIES,
+            JSON.stringify(savedMovieCollection),
+          );
+          setSavedMovies(savedMovieCollection);
+        })
+        .catch((reason) => window.console.log(reason));
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
     if (isLoggedIn) {
-      if (movies.length === 0) {
+      const result = searchMovie(movies, search, isShort);
+      setSearchResult(result);
+      localStorage.setItem(STORAGE_KEYS.SEARCH_RESULT, JSON.stringify(result));
+    }
+  }, [movies, search, isShort]);
+
+  useEffect(() => {
+    if (search && movies.length === 0) {
+      if (isLoggedIn) {
+        setIsMovieLoading(true);
+        const moviesFromStorage = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVIES)) ?? [];
+        if (moviesFromStorage.length !== 0) {
+          setMovies(moviesFromStorage);
+          const result = moviesFromStorage.filter(
+            (movie) => (movie.nameRU.includes(search) || movie.nameEN.includes(search))
+                && (isShort ? movie.duration <= SHORT_MOVIE_MAX_DURATION : true),
+          );
+          setSearchResult(result);
+          localStorage.setItem(STORAGE_KEYS.SEARCH_RESULT, JSON.stringify(result));
+          setIsMovieLoading(false);
+          return;
+        }
         moviesApi
           .getMovies()
           .then((movieCollection) => {
@@ -76,65 +104,28 @@ function App() {
               JSON.stringify(movieCollection),
             );
             setMovies(movieCollection);
-          })
-          .catch((reason) => window.console.log(reason));
-      }
-
-      if (savedMovies.length === 0) {
-        mainApi
-          .getSavedMovies()
-          .then((savedMovieCollection) => {
-            localStorage.setItem(
-              STORAGE_KEYS.SAVED_MOVIES,
-              JSON.stringify(savedMovieCollection),
+            const result = movieCollection.filter(
+              (movie) => (movie.nameRU.includes(search) || movie.nameEN.includes(search))
+                  && (isShort ? movie.duration <= SHORT_MOVIE_MAX_DURATION : true),
             );
-            setSavedMovies(savedMovieCollection);
+            setSearchResult(result);
+            localStorage.setItem(STORAGE_KEYS.SEARCH_RESULT, JSON.stringify(result));
           })
-          .catch((reason) => window.console.log(reason));
+          .catch((reason) => window.console.log(reason))
+          .finally(() => setIsMovieLoading(false));
       }
     }
-  }, [isLoggedIn]);
+  }, [search, isShort]);
 
   useEffect(() => {
-    const result = movies.filter(
-      (movie) => (movie.nameRU.includes(search) || movie.nameEN.includes(search))
-        && (isShort ? movie.duration <= 40 : true),
-    );
-    setSearchResult(result);
-    localStorage.setItem(STORAGE_KEYS.SEARCH_RESULT, JSON.stringify(result));
-  }, [movies, search, isShort]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SEARCH, search);
+    if (search) {
+      localStorage.setItem(STORAGE_KEYS.SEARCH, search);
+    }
   }, [search]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.IS_SHORT, JSON.stringify(isShort));
   }, [isShort]);
-
-  useEffect(() => {
-    const result = savedMovies.filter(
-      (movie) => (movie.nameRU.includes(savedSearch)
-          || movie.nameEN.includes(savedSearch))
-        && (isSavedShort ? movie.duration <= 40 : true),
-    );
-    setSavedSearchResult(result);
-    localStorage.setItem(
-      STORAGE_KEYS.SAVED_SEARCH_RESULT,
-      JSON.stringify(result),
-    );
-  }, [savedMovies, savedSearch, isSavedShort]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SAVED_SEARCH, savedSearch);
-  }, [savedSearch]);
-
-  useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.SAVED_IS_SHORT,
-      JSON.stringify(isSavedShort),
-    );
-  }, [isSavedShort]);
 
   const login = ({ email, password }) => {
     setIsLoading(true);
@@ -179,11 +170,16 @@ function App() {
       .editUser(name, email)
       .then(() => setCurrentUser((prev) => ({ ...prev, name, email })))
       .catch((reason) => window.console.log(reason))
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        setIsLoading(false);
+        setFormMessage(MESSAGES.PROFILE_UPDATED);
+      });
   };
 
   const logout = () => {
-    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    Object.values(STORAGE_KEYS).forEach((key) => {
+      localStorage.removeItem(key);
+    });
     setCurrentUser(undefined);
     setIsLoggedIn(false);
     navigate('/');
@@ -230,7 +226,7 @@ function App() {
           path="signin"
           element={(
             <main>
-              <Login onSubmit={login} isLoading={isLoading} />
+              <Login isLoggedIn={isLoggedIn} onSubmit={login} isLoading={isLoading} />
             </main>
           )}
         />
@@ -238,7 +234,7 @@ function App() {
           path="signup"
           element={(
             <main>
-              <Register onSubmit={register} isLoading={isLoading} />
+              <Register isLoggedIn={isLoggedIn} onSubmit={register} isLoading={isLoading} />
             </main>
           )}
         />
@@ -247,6 +243,7 @@ function App() {
           element={(
             <ProtectedRoute
               isLoggedIn={isLoggedIn}
+              isLoading={isMovieLoading}
               element={Movies}
               movies={searchResult}
               savedMovies={savedMovies}
@@ -266,13 +263,9 @@ function App() {
             <ProtectedRoute
               isLoggedIn={isLoggedIn}
               element={SavedMovies}
-              savedMovies={savedSearchResult}
+              savedMovies={savedMovies}
               onLike={likeMovie}
               onDelete={deleteMovie}
-              search={savedSearch}
-              onSearchChange={(value) => setSavedSearch(value)}
-              isShort={isSavedShort}
-              onIsShortChange={() => setIsSavedShort((prevState) => !prevState)}
             />
           )}
         />
@@ -285,6 +278,8 @@ function App() {
               onSubmit={changeProfileInfo}
               onLogout={logout}
               isLoading={isLoading}
+              message={formMessage}
+              setMessage={setFormMessage}
             />
           )}
         />

@@ -12,8 +12,20 @@
   gap: 0;
 }
 
+.form__message {
+  text-align: center;
+  margin-block: auto 20px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.form__message_error {
+  color: #FF004C;
+}
+
 .form__submit-button {
-  margin-block-start: auto;
   border: none;
   border-radius: 3px;
   background-color: #4285f4;
@@ -36,6 +48,7 @@
 .form__submit-button_inactive {
   background-color: #f8f8f8;
   color: #c2c2c2;
+  cursor: auto;
 }
 
 .form__submit-button_hidden {

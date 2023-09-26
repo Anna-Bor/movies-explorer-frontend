@@ -5,7 +5,9 @@ import CurrentUserContext from '../../contexts/CurrentUserContext';
 import Header from '../Header/Header';
 import Form from '../Form/Form';
 
-function Profile({ onSubmit, isLoading, onLogout }) {
+function Profile({
+  onSubmit, isLoading, onLogout, message, setMessage,
+}) {
   const currentUser = useContext(CurrentUserContext);
   const [name, setName] = useState(currentUser?.name);
   const [email, setEmail] = useState(currentUser?.email);
@@ -60,8 +62,11 @@ function Profile({ onSubmit, isLoading, onLogout }) {
             onSubmit={onSubmit}
             type="login"
             buttonText={isLoading ? FORM_OPTIONS.LOADING_TEXT : 'Сохранить'}
-            isButtonDisabled={isLoading}
+            isButtonDisabled={isLoading
+              || (currentUser?.name === name && currentUser?.email === email)}
             isButtonHidden={isButtonHidden}
+            message={message}
+            setMessage={setMessage}
           >
             {isButtonHidden && (
               <div className="profile__action-holder">

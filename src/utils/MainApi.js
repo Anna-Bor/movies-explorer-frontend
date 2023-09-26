@@ -1,5 +1,5 @@
 import { STORAGE_KEYS, URLS } from './constants';
-import createPromise from './utils';
+import { createPromise } from './utils';
 
 class MainApi {
   constructor(

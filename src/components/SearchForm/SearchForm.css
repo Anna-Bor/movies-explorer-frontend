@@ -66,6 +66,12 @@
   transition: opacity 0.4s ease-in;
 }
 
+.search__submit_inactive {
+  background-color: #f8f8f8;
+  color: #c2c2c2;
+  cursor: auto;
+}
+
 .search__submit:hover {
   opacity: 0.7;
 }

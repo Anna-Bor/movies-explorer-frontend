@@ -1,4 +1,6 @@
-const createPromise = (url, headers, method = 'GET', body = null) => fetch(url, {
+import { SHORT_MOVIE_MAX_DURATION } from './constants';
+
+export const createPromise = (url, headers, method = 'GET', body = null) => fetch(url, {
   method,
   headers,
   body: body && JSON.stringify(body),
@@ -16,4 +18,8 @@ const createPromise = (url, headers, method = 'GET', body = null) => fetch(url, 
   );
 });
 
-export default createPromise;
+export const searchMovie = (movies, search, isShort) => movies.filter(
+  (movie) => (movie.nameRU.toLowerCase().includes(search.toLowerCase())
+      || movie.nameEN.toLowerCase().includes(search.toLowerCase()))
+    && (isShort ? movie.duration <= SHORT_MOVIE_MAX_DURATION : true),
+);

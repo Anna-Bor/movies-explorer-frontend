@@ -4,7 +4,7 @@ import FilterCheckbox from '../FilterCheckbox/FilterCheckbox';
 import Search from '../../images/search.svg';
 
 function SearchForm({
-  search, onSearchChange, isShort, onIsShortChange,
+  search, onSearchChange, isShort, onIsShortChange, isOnSavedPage,
 }) {
   const [searchValue, setSearchValue] = useState(search);
 
@@ -30,7 +30,11 @@ function SearchForm({
               />
             </label>
           </div>
-          <button type="submit" className="search__submit">
+          <button
+            type="submit"
+            className={`search__submit${!isOnSavedPage && searchValue.length === 0 ? ' search__submit_inactive' : ''}`}
+            disabled={!isOnSavedPage && searchValue.length === 0}
+          >
             Найти
           </button>
         </div>

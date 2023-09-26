@@ -8,6 +8,7 @@ import MoviesCardList from '../MoviesCardList/MoviesCardList';
 
 function Movies({
   movies,
+  isLoading,
   savedMovies,
   isOnSavedPage,
   onLike,
@@ -24,16 +25,19 @@ function Movies({
       <main className="movies">
         <SearchForm
           search={search}
+          isOnSavedPage={isOnSavedPage}
           onSearchChange={onSearchChange}
           isShort={isShort}
           onIsShortChange={onIsShortChange}
         />
         <MoviesCardList
+          search={search}
           movies={movies}
           savedMovies={savedMovies}
           isOnSavedPage={isOnSavedPage}
           onLike={onLike}
           onDelete={onDelete}
+          isLoading={isLoading}
         />
       </main>
       <Footer />

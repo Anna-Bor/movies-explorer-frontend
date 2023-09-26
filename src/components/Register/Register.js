@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Register.css';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '../../images/logo.svg';
 import Form from '../Form/Form';
 import { FORM_OPTIONS } from '../../utils/constants';
 
-function Register({ onSubmit, isLoading }) {
+function Register({ isLoggedIn, onSubmit, isLoading }) {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/movies');
+    }
+  }, []);
   return (
     <section className="register">
       <NavLink to="/" className="register__logo">

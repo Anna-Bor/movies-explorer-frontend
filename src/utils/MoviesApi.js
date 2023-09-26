@@ -1,5 +1,5 @@
 import { URLS } from './constants';
-import createPromise from './utils';
+import { createPromise } from './utils';
 
 class MoviesApi {
   constructor({ baseUrl, headers }, { moviesUrl }) {

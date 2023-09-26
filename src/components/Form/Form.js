@@ -13,14 +13,21 @@ function Form({
   isButtonDisabled,
   isButtonHidden,
   children,
+  message,
+  setMessage,
 }) {
   const formElementRef = useRef(undefined);
 
   useEffect(
-    () => new FormValidator(
-      FORM_OPTIONS,
-      formElementRef.current,
-    ).enableValidation(),
+    () => {
+      new FormValidator(
+        FORM_OPTIONS,
+        formElementRef.current,
+      ).enableValidation();
+      if (setMessage) {
+        setMessage('');
+      }
+    },
     [],
   );
 
@@ -73,10 +80,11 @@ function Form({
             curr,
           ];
         })}
+      <p className="form__message">{message}</p>
       <button
         className={`form__submit-button${
           isButtonHidden ? ' form__submit-button_hidden' : ''
-        }`}
+        }${isButtonDisabled ? ' form__submit-button_inactive' : ''}`}
         type="submit"
         disabled={isButtonDisabled}
       >
