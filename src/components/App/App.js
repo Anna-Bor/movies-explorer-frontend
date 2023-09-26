@@ -1,133 +1,291 @@
 import './App.css';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { MESSAGES, SHORT_MOVIE_MAX_DURATION, STORAGE_KEYS } from '../../utils/constants';
+import CurrentUserContext from '../../contexts/CurrentUserContext';
 import Main from '../Main/Main';
 import Movies from '../Movies/Movies';
 import moviesApi from '../../utils/MoviesApi';
+import mainApi from '../../utils/MainApi';
 import SavedMovies from '../SavedMovies/SavedMovies';
 import NotFound from '../NotFound/NotFound';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
 import Profile from '../Profile/Profile';
+import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
+import { searchMovie } from '../../utils/utils';
 
 function App() {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem(STORAGE_KEYS.TOKEN),
+  );
+  const [currentUser, setCurrentUser] = useState(undefined);
   const [movies, setMovies] = useState([]);
-
-  const [savedMovies] = useState([
-    {
-      movieId: 1,
-      nameRU: '«Роллинг Стоунз» в изгнании',
-      nameEN: 'Stones in Exile',
-      director: 'Стивен Кайак ',
-      country: 'США',
-      year: '2010',
-      duration: 61,
-      description:
-        'В конце 1960-х группа «Роллинг Стоунз», несмотря на все свои мегахиты и сверхуспешные концертные туры, была разорена. Виной всему — бездарный менеджмент и драконовское налогообложение в Британии. Тогда музыканты приняли не самое простое для себя решение: летом 1971 года после выхода альбома «Stiсky Fingers» они отправились на юг Франции записывать новую пластинку. Именно там, на Лазурном Берегу, в арендованном Китом Ричардсом подвале виллы Неллькот родился сборник «Exile on Main St.», который стал лучшим альбомом легендарной группы.',
-      image: '/uploads/thumbnail_stones_in_exile_b2f1b8f4b7.jpeg',
-    },
-    {
-      movieId: 5,
-      nameRU: 'Taqwacore: The Birth of Punk Islam',
-      nameEN: 'Taqwacore: The Birth of Punk Islam',
-      director: ' Омар Маджид',
-      country: 'Канада',
-      year: '2009',
-      duration: 80,
-      description:
-        "**Don't panic, we're Islamic!**\nПакистанские лесбиянки из Ванкувера, арабские хеви-металлисты из Чикаго, группа Vote Hezbollah, ведомая иранцем из Сан-Антонио, — все это невымышленные, сплошь настоящие персонажи, запечатленные в первом документальном свидетельстве о субкультуре исламского панка. Хотя до недавнего времени исламский панк, он же taqwacore, был художественным вымыслом, вышедшим из-под пера писателя-мусульманина Майкла Мухаммеда Найта, его книга сделала это явление вполне реальным, тогда как сам он стал главным героем фильма.",
-      image: '/uploads/thumbnail_taqwacore2_2f487d2e74.jpeg',
-    },
-    {
-      movieId: 9,
-      nameRU: ' 196 ударов в минуту',
-      nameEN: '196 BPM',
-      director: 'Ромуальд Кармакар',
-      country: 'Германия',
-      year: '2003',
-      duration: 60,
-      description:
-        'Панорамный взгляд на берлинский Лав-парад 2002-го года с трех разных точек зрения, каждая из которых образует отдельную новеллу. Первая, «Интро», показывает происходящее глазами людей, стоящих у входа в клуб Linientreu; вторая, «Габба», переносит зрителя в гущу толпы на площади Брайтшайдплац, где диджейские вертушки установлены даже в кебабной. И третья, «Хелл за работой», дает исчерпывающее представление о том, как DJ Hell сводит пластинки во время своего сета в WMF.',
-      trailerLink: 'https://www.youtube.com/watch?v=GsDRVpdgNJ4',
-      image: '/uploads/thumbnail_zagruzhennoe_1_fd5faff237.jpeg',
-    },
-    {
-      movieId: 12,
-      nameRU: 'Виллалобос',
-      nameEN: 'Villalobos',
-      director: 'Ромуальд Кармакар',
-      country: 'Германия',
-      year: '2009',
-      duration: 110,
-      description:
-        'Последний фильм трилогии, опус магнум Ромуальда Кармакара, премьера которого состоялась в основной программе Венецианского кинофестиваля. Рикардо Виллалобос предстает здесь не столько как один самых востребованных диджеев, сколько как визионер от мира современной музыки. Кармакар исследует не феномен популярности Виллалобоса, а то, как устроена его голова, что творится в его аппаратуре, когда он сводит один трек с другим, как рождается музыка и какое отношение тек-хаус имеет к Мусоргскому.',
-      trailerLink: 'https://www.kinopoisk.ru/film/586534/video/56500/',
-      image: '/uploads/590x400_2eccd40a93.jpeg',
-    },
-  ]);
+  const [savedMovies, setSavedMovies] = useState(
+    JSON.parse(localStorage.getItem(STORAGE_KEYS.SAVED_MOVIES)) ?? [],
+  );
+  const [search, setSearch] = useState(
+    localStorage.getItem(STORAGE_KEYS.SEARCH) ?? '',
+  );
+  const [isShort, setIsShort] = useState(
+    JSON.parse(localStorage.getItem(STORAGE_KEYS.IS_SHORT)) ?? false,
+  );
+  const [searchResult, setSearchResult] = useState(
+    JSON.parse(localStorage.getItem(STORAGE_KEYS.SEARCH_RESULT)) ?? [],
+  );
+  const [formMessage, setFormMessage] = useState('');
+  const [isMovieLoading, setIsMovieLoading] = useState(false);
 
   useEffect(() => {
-    moviesApi
-      .getMovies()
-      .then((movieCollection) => {
-        setMovies(movieCollection);
-      })
-      .catch((reason) => window.console.log(reason));
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    if (token) {
+      mainApi
+        .getUser(token)
+        .then((authUser) => {
+          if (authUser) {
+            setCurrentUser(authUser);
+            setIsLoggedIn(true);
+          }
+        })
+        .catch((reason) => {
+          window.console.log(reason);
+          setCurrentUser(undefined);
+          setIsLoggedIn(false);
+        });
+    }
   }, []);
 
-  const login = () => {
+  useEffect(() => {
+    if (isLoggedIn && savedMovies.length === 0) {
+      mainApi
+        .getSavedMovies()
+        .then((savedMovieCollection) => {
+          localStorage.setItem(
+            STORAGE_KEYS.SAVED_MOVIES,
+            JSON.stringify(savedMovieCollection),
+          );
+          setSavedMovies(savedMovieCollection);
+        })
+        .catch((reason) => window.console.log(reason));
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      const result = searchMovie(movies, search, isShort);
+      setSearchResult(result);
+      localStorage.setItem(STORAGE_KEYS.SEARCH_RESULT, JSON.stringify(result));
+    }
+  }, [movies, search, isShort]);
+
+  useEffect(() => {
+    if (search && movies.length === 0) {
+      if (isLoggedIn) {
+        setIsMovieLoading(true);
+        const moviesFromStorage = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOVIES)) ?? [];
+        if (moviesFromStorage.length !== 0) {
+          setMovies(moviesFromStorage);
+          const result = moviesFromStorage.filter(
+            (movie) => (movie.nameRU.includes(search) || movie.nameEN.includes(search))
+                && (isShort ? movie.duration <= SHORT_MOVIE_MAX_DURATION : true),
+          );
+          setSearchResult(result);
+          localStorage.setItem(STORAGE_KEYS.SEARCH_RESULT, JSON.stringify(result));
+          setIsMovieLoading(false);
+          return;
+        }
+        moviesApi
+          .getMovies()
+          .then((movieCollection) => {
+            localStorage.setItem(
+              STORAGE_KEYS.MOVIES,
+              JSON.stringify(movieCollection),
+            );
+            setMovies(movieCollection);
+            const result = movieCollection.filter(
+              (movie) => (movie.nameRU.includes(search) || movie.nameEN.includes(search))
+                  && (isShort ? movie.duration <= SHORT_MOVIE_MAX_DURATION : true),
+            );
+            setSearchResult(result);
+            localStorage.setItem(STORAGE_KEYS.SEARCH_RESULT, JSON.stringify(result));
+          })
+          .catch((reason) => window.console.log(reason))
+          .finally(() => setIsMovieLoading(false));
+      }
+    }
+  }, [search, isShort]);
+
+  useEffect(() => {
+    if (search) {
+      localStorage.setItem(STORAGE_KEYS.SEARCH, search);
+    }
+  }, [search]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.IS_SHORT, JSON.stringify(isShort));
+  }, [isShort]);
+
+  const login = ({ email, password }) => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 10000);
+    mainApi
+      .login(email, password)
+      .then((response) => {
+        localStorage.setItem(STORAGE_KEYS.TOKEN, response.token);
+        return response.token;
+      })
+      .then((token) => mainApi.getUser(token))
+      .then((authUser) => {
+        if (authUser) {
+          setCurrentUser(authUser);
+          setIsLoggedIn(true);
+          navigate('/movies', { replace: true });
+        }
+      })
+      .catch((reason) => window.console.log(reason))
+      .finally(() => setIsLoading(false));
   };
 
-  const register = () => {
+  const register = ({ name, email, password }) => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 10000);
+    mainApi
+      .register(name, email, password)
+      .then((authUser) => Promise.all([mainApi.login(email, password), Promise.resolve(authUser)]))
+      .then(([loginResponse, authUser]) => {
+        if (loginResponse.token) {
+          localStorage.setItem(STORAGE_KEYS.TOKEN, loginResponse.token);
+          setCurrentUser(authUser);
+          setIsLoggedIn(true);
+          navigate('/movies', { replace: true });
+        }
+      })
+      .catch((reason) => window.console.log(reason))
+      .finally(() => setIsLoading(false));
   };
 
-  const changeProfileInfo = () => {
+  const changeProfileInfo = ({ name, email }) => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 10000);
+    mainApi
+      .editUser(name, email)
+      .then(() => setCurrentUser((prev) => ({ ...prev, name, email })))
+      .catch((reason) => window.console.log(reason))
+      .finally(() => {
+        setIsLoading(false);
+        setFormMessage(MESSAGES.PROFILE_UPDATED);
+      });
+  };
+
+  const logout = () => {
+    Object.values(STORAGE_KEYS).forEach((key) => {
+      localStorage.removeItem(key);
+    });
+    setCurrentUser(undefined);
+    setIsLoggedIn(false);
+    navigate('/');
+  };
+
+  const likeMovie = (movie) => {
+    setIsLoading(true);
+    mainApi
+      .saveMovie(movie)
+      .then((savedMovie) => {
+        setSavedMovies((prev) => [...prev, savedMovie]);
+        localStorage.setItem(
+          STORAGE_KEYS.SAVED_MOVIES,
+          JSON.stringify(savedMovies),
+        );
+      })
+      .catch((reason) => window.console.log(reason))
+      .finally(() => setIsLoading(false));
+  };
+
+  const deleteMovie = (id) => {
+    const movieId = savedMovies.find((movie) => movie.movieId === id)?._id;
+    if (movieId) {
+      setIsLoading(true);
+      mainApi
+        .deleteMovie(movieId)
+        .then(() => {
+          setSavedMovies((prev) => prev.filter((movie) => movie.movieId !== id));
+          localStorage.setItem(
+            STORAGE_KEYS.SAVED_MOVIES,
+            JSON.stringify(savedMovies),
+          );
+        })
+        .catch((reason) => window.console.log(reason))
+        .finally(() => setIsLoading(false));
+    }
   };
 
   return (
-    <Routes>
-      <Route path="/" element={<Main />} />
-      <Route
-        path="movies"
-        element={(
-          <Movies
-            movies={movies}
-            savedMovies={savedMovies}
-            isOnSavedPage={false}
-          />
-        )}
-      />
-      <Route
-        path="saved-movies"
-        element={<SavedMovies savedMovies={savedMovies} />}
-      />
-      <Route
-        path="signin"
-        element={<main><Login onSubmit={login} isLoading={isLoading} /></main>}
-      />
-      <Route
-        path="signup"
-        element={<main><Register onSubmit={register} isLoading={isLoading} /></main>}
-      />
-      <Route
-        path="profile"
-        element={(
-          <Profile
-            user={{ name: 'Виталий', email: 'pochta@yandex.ru' }}
-            onSubmit={changeProfileInfo}
-            isLoading={isLoading}
-          />
-        )}
-      />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <CurrentUserContext.Provider value={currentUser}>
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route
+          path="signin"
+          element={(
+            <main>
+              <Login isLoggedIn={isLoggedIn} onSubmit={login} isLoading={isLoading} />
+            </main>
+          )}
+        />
+        <Route
+          path="signup"
+          element={(
+            <main>
+              <Register isLoggedIn={isLoggedIn} onSubmit={register} isLoading={isLoading} />
+            </main>
+          )}
+        />
+        <Route
+          path="movies"
+          element={(
+            <ProtectedRoute
+              isLoggedIn={isLoggedIn}
+              isLoading={isMovieLoading}
+              element={Movies}
+              movies={searchResult}
+              savedMovies={savedMovies}
+              isOnSavedPage={false}
+              onLike={likeMovie}
+              onDelete={deleteMovie}
+              search={search}
+              onSearchChange={(value) => setSearch(value)}
+              isShort={isShort}
+              onIsShortChange={() => setIsShort((prevState) => !prevState)}
+            />
+          )}
+        />
+        <Route
+          path="saved-movies"
+          element={(
+            <ProtectedRoute
+              isLoggedIn={isLoggedIn}
+              element={SavedMovies}
+              savedMovies={savedMovies}
+              onLike={likeMovie}
+              onDelete={deleteMovie}
+            />
+          )}
+        />
+        <Route
+          path="profile"
+          element={(
+            <ProtectedRoute
+              isLoggedIn={isLoggedIn}
+              element={Profile}
+              onSubmit={changeProfileInfo}
+              onLogout={logout}
+              isLoading={isLoading}
+              message={formMessage}
+              setMessage={setFormMessage}
+            />
+          )}
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </CurrentUserContext.Provider>
   );
 }
 

@@ -5,13 +5,23 @@ import {
   DEFAULT_GRID_ELEMENTS_AMOUNT,
   DEFAULT_GRID_ELEMENTS_STEP,
   DEVICES,
+  MESSAGES,
   WINDOW_MIN_WIDTH,
 } from '../../utils/constants';
+import Preloader from '../Preloader/Preloader';
 
-function MoviesCardList({ movies, savedMovies, isOnSavedPage }) {
+function MoviesCardList({
+  movies,
+  savedMovies,
+  isOnSavedPage,
+  onLike,
+  onDelete,
+  isLoading,
+  search,
+}) {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [moviesAmount, setMoviesAmount] = useState(0);
-  const [showedMoviesAmount, setShowedMoviesAmount] = useState(0);
+  const [showedMoviesAmount, setShowedMoviesAmount] = useState(isOnSavedPage ? movies.length : 0);
   const [showStep, setShowStep] = useState(0);
 
   const handleWindowWidthChange = (size) => {
@@ -19,7 +29,9 @@ function MoviesCardList({ movies, savedMovies, isOnSavedPage }) {
       DEFAULT_GRID_ELEMENTS_AMOUNT[size]
       && DEFAULT_GRID_ELEMENTS_STEP[size]
     ) {
-      setShowedMoviesAmount((prevState) => Math.max(DEFAULT_GRID_ELEMENTS_AMOUNT[size], prevState));
+      setShowedMoviesAmount(
+        (prevState) => Math.max(DEFAULT_GRID_ELEMENTS_AMOUNT[size], isOnSavedPage ? prevState : 0),
+      );
 
       setShowStep(DEFAULT_GRID_ELEMENTS_STEP[size]);
     }
@@ -51,21 +63,30 @@ function MoviesCardList({ movies, savedMovies, isOnSavedPage }) {
 
   return (
     <section className="movies-list">
+      {isLoading && <Preloader />}
+      {!isLoading
+        && !isOnSavedPage
+        && search.length !== 0
+        && movies.length === 0
+        && (<p>{MESSAGES.NOT_FOUND}</p>)}
+      {!isLoading && (
       <ul className="movies-list__holder">
-        {movies.slice(0, showedMoviesAmount).map((movie) => (
-          <MoviesCard
-            key={movie.id || movie.movieId}
-            isOnSavedPage={isOnSavedPage}
-            image={movie.image.url || movie.image}
-            name={movie.nameRU || movie.nameEN}
-            duration={movie.duration}
-            isSaved={savedMovies
-              ?.map((savedMovie) => savedMovie.movieId)
-              ?.includes(movie.id || movie.movieId)}
-          />
-        ))}
+        {movies.slice(0, showedMoviesAmount)
+          .map((movie) => (
+            <MoviesCard
+              key={movie.id || movie.movieId}
+              isOnSavedPage={isOnSavedPage}
+              movie={movie}
+              isSaved={savedMovies
+                ?.map((savedMovie) => savedMovie.movieId)
+                ?.includes(movie.id || movie.movieId)}
+              onLike={onLike}
+              onDelete={onDelete}
+            />
+          ))}
       </ul>
-      {moviesAmount > showedMoviesAmount && (
+      )}
+      {!isLoading && moviesAmount > showedMoviesAmount && (
         <button
           type="button"
           className="movies-list__action"

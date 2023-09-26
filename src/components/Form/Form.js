@@ -13,14 +13,21 @@ function Form({
   isButtonDisabled,
   isButtonHidden,
   children,
+  message,
+  setMessage,
 }) {
   const formElementRef = useRef(undefined);
 
   useEffect(
-    () => new FormValidator(
-      FORM_OPTIONS,
-      formElementRef.current,
-    ).enableValidation(),
+    () => {
+      new FormValidator(
+        FORM_OPTIONS,
+        formElementRef.current,
+      ).enableValidation();
+      if (setMessage) {
+        setMessage('');
+      }
+    },
     [],
   );
 
@@ -63,15 +70,21 @@ function Form({
             additionalProps={input.additionalProps}
           />
         ))
-        .reduce((prev, curr) => [
-          prev,
-          isSeparatorEnabled ? <hr className="form__separator" /> : undefined,
-          curr,
-        ])}
+        .reduce((prev, curr, currIndex) => {
+          const key = `sep-${currIndex}`;
+          return [
+            prev,
+            isSeparatorEnabled ? (
+              <hr className="form__separator" key={key} />
+            ) : undefined,
+            curr,
+          ];
+        })}
+      <p className="form__message">{message}</p>
       <button
         className={`form__submit-button${
           isButtonHidden ? ' form__submit-button_hidden' : ''
-        }`}
+        }${isButtonDisabled ? ' form__submit-button_inactive' : ''}`}
         type="submit"
         disabled={isButtonDisabled}
       >

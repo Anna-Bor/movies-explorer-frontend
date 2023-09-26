@@ -1,4 +1,5 @@
 import { URLS } from './constants';
+import { createPromise } from './utils';
 
 class MoviesApi {
   constructor({ baseUrl, headers }, { moviesUrl }) {
@@ -8,14 +9,7 @@ class MoviesApi {
   }
 
   getMovies() {
-    return fetch(this._baseUrl + this._moviesUrl, {
-      headers: this._headers,
-    }).then((res) => {
-      if (res.ok) {
-        return res.json();
-      }
-      return Promise.reject(new Error(`Ошибка: ${res.status}`));
-    });
+    return createPromise(this._baseUrl + this._moviesUrl, this._headers);
   }
 }
 

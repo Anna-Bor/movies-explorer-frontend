@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Login.css';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import Logo from '../../images/logo.svg';
 import Form from '../Form/Form';
 import { FORM_OPTIONS } from '../../utils/constants';
 
-function Login({ onSubmit, isLoading }) {
+function Login({ isLoggedIn, onSubmit, isLoading }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/movies');
+    }
+  }, []);
   return (
     <section className="login">
       <NavLink to="/" className="login__logo">
